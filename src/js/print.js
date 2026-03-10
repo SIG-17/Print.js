@@ -13,7 +13,8 @@ const Print = {
     iframeElement.onload = () => {
       if (params.type === 'pdf') {
         // Add a delay for Firefox. In my tests, 1000ms was sufficient but 100ms was not
-        if (Browser.isFirefox() && Browser.getFirefoxMajorVersion() < 110) {
+       // if (Browser.isFirefox() && Browser.getFirefoxMajorVersion() < 110) {
+       if ((Browser.isFirefox()&& Browser.getFirefoxMajorVersion() < 110) || Browser.isSafari()) {
           setTimeout(() => performPrint(iframeElement, params), 1000)
         } else {
           performPrint(iframeElement, params)
@@ -72,19 +73,20 @@ function performPrint (iframeElement, params) {
   } catch (error) {
     params.onError(error)
   } finally {
-    if (Browser.isFirefox() && Browser.getFirefoxMajorVersion() < 110) {
+    if ((Browser.isFirefox() && Browser.getFirefoxMajorVersion() < 110) || Browser.isSafari()) 
       // Move the iframe element off-screen and make it invisible
       iframeElement.style.visibility = 'hidden'
       iframeElement.style.left = '-1px'
     }
 
     cleanUp(params)
-  }
+  
 }
 
 function loadIframeImages (images) {
   const promises = images.map(image => {
-    if (image.src && image.src !== window.location.href) {
+    //if (image.src && image.src !== window.location.href) {
+     if (image.getAttribute('src')) {
       return loadIframeImage(image)
     }
   })
@@ -95,7 +97,8 @@ function loadIframeImages (images) {
 function loadIframeImage (image) {
   return new Promise(resolve => {
     const pollImage = () => {
-      !image || typeof image.naturalWidth === 'undefined' || image.naturalWidth === 0 || !image.complete
+      //!image || typeof image.naturalWidth === 'undefined' || image.naturalWidth === 0 || !image.complete
+      (!image || !image.complete) && (typeof image.naturalWidth === 'undefined' || image.naturalWidth === 0)
         ? setTimeout(pollImage, 500)
         : resolve()
     }
